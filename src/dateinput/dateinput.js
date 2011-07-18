@@ -279,6 +279,10 @@
 			currMonth = date.getMonth();
 			currDay	 = date.getDate();				
 			
+			// focus the input after selection (doesn't work in IE)
+			if (e.type == "click" && !$.browser.msie) {
+				input.focus();
+			}
 			
 			// change
 			e = e || $.Event("api");
@@ -310,13 +314,13 @@
 				if (e.ctrlKey) { return true; }				
 				var key = e.keyCode;			 
 				
-				// backspace clears the value
-				if (key == 8) {
+				// backspace or delete clears the value
+				if (key == 8 || key == 46) {
 					input.val("");
 					return self.hide(e);	
 				}
 				
-				// esc or tab key
+				// esc or tab key exits
 				if (key == 27 || key == 9) { return self.hide(e); }						
 					
 				if ($(KEYS).index(key) >= 0) {
@@ -650,11 +654,11 @@
 					e.type = "onHide";
 					fire.trigger(e);
 					
-					$(document).unbind("click.d").unbind("keydown.d");
-					
 					// cancelled ?
 					if (e.isDefaultPrevented()) { return; }
 					
+					$(document).unbind("click.d").unbind("keydown.d");
+										
 					// do the hide
 					root.hide();
 					opened = false;
@@ -707,17 +711,26 @@
 	
 				var key = e.keyCode;
 		
-				// open dateinput with navigation keyw
-				if (!opened &&  $(KEYS).index(key) >= 0) {
+			// open dateinput with navigation keys or spacebar
+			if (!opened && ($(KEYS).index(key) >= 0 || key == 32)) {
 					self.show(e);
 					return e.preventDefault();
-				} 
+			
+			// clear value on backspace or delete
+			} else if (key == 8 || key == 46) {
+				input.val("");
+			} 
 				
 				// allow tab
 				return e.shiftKey || e.ctrlKey || e.altKey || key == 9 ? true : e.preventDefault();   
 				
 			});
 		}
+			
+			// allow tab
+			return e.shiftKey || e.ctrlKey || e.altKey || key == 9 ? true : e.preventDefault();   
+			
+		}); 
 		
 		// initial value 		
 		if (parseDate(input.val())) { 
